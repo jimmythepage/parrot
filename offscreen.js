@@ -30,12 +30,29 @@ chrome.runtime.onMessage.addListener(async (message) => {
 let recorder;
 let data = [];
 
-const notionSecret = 'secret';
-const existingPageId = 'pageid';
-const OPENAI_KEY="sk-secretkey"
-const GPT_PROMPT="Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points."
+let notionSecret="";
+let existingPageId="";
+let OPENAI_KEY="";
+let GPT_PROMPT="Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points."
+ 
+
+// Function to fetch and parse the config file
+function loadConfig() 
+{
+  fetch('config.json')
+      .then(response => response.json())
+      .then(data => {
+          console.log('Configuration loaded:', data);
+          notionSecret=data.notionSecret;
+          existingPageId=data.existingPageId;
+          OPENAI_KEY=data.openAIKey;
+          GPT_PROMPT=data.gptPrompt;
+      })
+      .catch(error => console.error('Error loading configuration:', error));
+}
 
 async function startRecording(streamId) {
+  loadConfig();
   const currentDate = new Date().toLocaleString('en-US', { timeZone: 'UTC' });
   const transcript_title="Transcript "+ currentDate;
   if (recorder?.state === 'recording') {

@@ -56,6 +56,41 @@ async function startRecording(streamId) {
     const blob = new Blob(data, { type: 'audio/webm' });
     window.open(URL.createObjectURL(blob), '_blank');
 
+    console.log("Audio blob saved");
+
+    // Step 1: Convert Blob to File
+    const audioFile = new File([blob], "audio.webm", { type: 'audio/webm' });
+
+    console.log("Audio file prepared");
+
+    // Step 2: Prepare FormData
+    const formData = new FormData();
+    formData.append("file", audioFile);
+    formData.append("model","whisper-1");
+    formData.append("language","en");
+
+    console.log("Form data prepared");
+
+    // Step 3: Set up HTTP Request
+    const whisperAPIEndpoint = "https://api.openai.com/v1/audio/transcriptions";
+    fetch(whisperAPIEndpoint, {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer api_key'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Step 4: Handle Response
+        console.log("JSON:" + JSON.stringify(data));
+        console.log("Transcription: ", data.text); // Display or process the transcription
+    })
+    .catch(error => {
+        console.error("Error: ", error);
+    });
+
+
     // Clear state ready for next recording
     recorder = undefined;
     data = [];

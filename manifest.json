@@ -10,5 +10,5 @@
   "background": {
     "service_worker": "service-worker.js"
   },
-  "permissions": ["tabCapture", "offscreen"]
+  "permissions": ["tabCapture", "offscreen","storage"]
 }

@@ -34,6 +34,7 @@ let notionSecret="";
 let existingPageId="";
 let OPENAI_KEY="";
 let GPT_PROMPT="Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points."
+let language="en";
  
 
 // Function to fetch and parse the config file
@@ -47,6 +48,7 @@ function loadConfig()
           existingPageId=data.existingPageId;
           OPENAI_KEY=data.openAIKey;
           GPT_PROMPT=data.gptPrompt;
+          language=data.language;
       })
       .catch(error => console.error('Error loading configuration:', error));
 }
@@ -108,7 +110,7 @@ async function startRecording(streamId) {
     const formData = new FormData();
     formData.append("file", audioFile);
     formData.append("model","whisper-1");
-    formData.append("language","en");
+    formData.append("language",language);
 
     console.log("Form data prepared");
 

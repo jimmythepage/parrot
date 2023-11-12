@@ -2,5 +2,6 @@
     "notionSecret": "your_notion_secret",
     "existingPageId": "your_page_id",
     "openAIKey": "your_openai_key",
-    "gptPrompt": "Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points."
+    "gptPrompt": "Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points.",
+    "language":"en"
 }

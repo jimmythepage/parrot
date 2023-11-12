@@ -7,6 +7,9 @@
   "action": {
     "default_icon": "icons/not-recording.png"
   },
+  "icons": {
+    "128": "icons/not-recording.png"
+  },  
   "background": {
     "service_worker": "service-worker.js"
   },

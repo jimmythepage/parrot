@@ -30,7 +30,14 @@ chrome.runtime.onMessage.addListener(async (message) => {
 let recorder;
 let data = [];
 
+const notionSecret = 'secret';
+const existingPageId = 'pageid';
+const OPENAI_KEY="sk-secretkey"
+const GPT_PROMPT="Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points."
+
 async function startRecording(streamId) {
+  const currentDate = new Date().toLocaleString('en-US', { timeZone: 'UTC' });
+  const transcript_title="Transcript "+ currentDate;
   if (recorder?.state === 'recording') {
     throw new Error('Called startRecording while recording is in progress.');
   }
@@ -54,7 +61,24 @@ async function startRecording(streamId) {
   recorder.ondataavailable = (event) => data.push(event.data);
   recorder.onstop = () => {
     const blob = new Blob(data, { type: 'audio/webm' });
-    window.open(URL.createObjectURL(blob), '_blank');
+    const url = URL.createObjectURL(blob);
+  
+    // Create a new anchor element
+    const a = document.createElement('a');
+    
+    // Set the href and download attributes for the anchor element
+    a.href = url;
+    a.download = transcript_title+'.webm'; // You can name the file here
+    
+    // Append the anchor to the document
+    document.body.appendChild(a);
+    
+    // Trigger a click on the anchor to start download
+    a.click();
+    
+    // Clean up by removing the anchor element and revoking the blob URL
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
     console.log("Audio blob saved");
 
@@ -76,7 +100,7 @@ async function startRecording(streamId) {
     fetch(whisperAPIEndpoint, {
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer sk-key'
+            'Authorization': 'Bearer ' + OPENAI_KEY
         },
         body: formData
     })
@@ -84,7 +108,7 @@ async function startRecording(streamId) {
     .then(data => {
         // Step 4: Handle Response
         console.log("Transcription: ", data.text); // Display or process the transcription
-        pushToNotion(data.text);
+        askGPTRecap(transcript_title,data.text);
     })
     .catch(error => {
         console.error("Error: ", error);
@@ -122,11 +146,39 @@ async function stopRecording() {
   // keep the sample fairly simple to follow.
 }
 
-async function pushToNotion(transcript) {
-  const currentDate = new Date().toLocaleString('en-US', { timeZone: 'UTC' });
+async function askGPTRecap(transcript_title,transcript)
+{
+  fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+ OPENAI_KEY
+    },
+    body: JSON.stringify({
+      "model": "gpt-3.5-turbo",
+      "messages": [
+        {
+          "role": "system",
+          "content": GPT_PROMPT
+        },
+        {
+          "role": "user",
+          "content": transcript
+        }
+      ]
+    })
+  })
+  .then(response => response.json())
+  .then(data => 
+    {
+      console.log(data);
+      let notes = data.choices[0].message.content;
+      pushToNotion(transcript_title,transcript,notes);
+    })
+  .catch(error => console.error('Error:', error));
+}
 
-  const notionSecret = 'secret';
-  const existingPageId = 'pageid';
+async function pushToNotion(transcript_title,transcript,notes) {
 
   // Example of creating a new page in Notion
   fetch('https://api.notion.com/v1/pages', {
@@ -140,15 +192,36 @@ async function pushToNotion(transcript) {
       "parent": { "page_id": existingPageId},
       "properties": {
         "title": {
-          "title": [{ "type": "text", "text": { "content": "Transcript "+currentDate } }]
+          "title": [{ "type": "text", "text": { "content": transcript_title } }]
         }
       },
       "children": [
         {
           "object": "block",
+          "type": "heading_1",
+          "heading_1": {
+            "rich_text": [{ "type": "text", "text": { "content": "Transcript" } }]
+          }
+        },
+        {
+          "object": "block",
           "type": "paragraph",
           "paragraph": {
             "rich_text": [{ "type": "text", "text": { "content": transcript } }]
+          }
+        },
+        {
+          "object": "block",
+          "type": "heading_1",
+          "heading_1": {
+            "rich_text": [{ "type": "text", "text": { "content": "Notes" } }]
+          }
+        },
+        {
+          "object": "block",
+          "type": "paragraph",
+          "paragraph": {
+            "rich_text": [{ "type": "text", "text": { "content": notes } }]
           }
         }
       ]

@@ -76,15 +76,15 @@ async function startRecording(streamId) {
     fetch(whisperAPIEndpoint, {
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer api_key'
+            'Authorization': 'Bearer sk-key'
         },
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         // Step 4: Handle Response
-        console.log("JSON:" + JSON.stringify(data));
         console.log("Transcription: ", data.text); // Display or process the transcription
+        pushToNotion(data.text);
     })
     .catch(error => {
         console.error("Error: ", error);
@@ -121,3 +121,42 @@ async function stopRecording() {
   // make sure the browser keeps the Object URL we create (see above) and to
   // keep the sample fairly simple to follow.
 }
+
+async function pushToNotion(transcript) {
+  const currentDate = new Date().toLocaleString('en-US', { timeZone: 'UTC' });
+
+  const notionSecret = 'secret';
+  const existingPageId = 'pageid';
+
+  // Example of creating a new page in Notion
+  fetch('https://api.notion.com/v1/pages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${notionSecret}`,
+      'Notion-Version': '2022-06-28'
+    },
+    body: JSON.stringify({ 
+      "parent": { "page_id": existingPageId},
+      "properties": {
+        "title": {
+          "title": [{ "type": "text", "text": { "content": "Transcript "+currentDate } }]
+        }
+      },
+      "children": [
+        {
+          "object": "block",
+          "type": "paragraph",
+          "paragraph": {
+            "rich_text": [{ "type": "text", "text": { "content": transcript } }]
+          }
+        }
+      ]
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+}
+
+

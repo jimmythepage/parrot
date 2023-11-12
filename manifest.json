@@ -10,5 +10,8 @@
   "background": {
     "service_worker": "service-worker.js"
   },
+  "host_permissions": [
+    "https://api.notion.com/*"
+  ],
   "permissions": ["tabCapture", "offscreen","storage"]
 }

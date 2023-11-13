@@ -1,7 +1,7 @@
 # Parrot 🦜 - Version 0.1
 
 ## Overview
-**Parrot** is a Chrome extension that streamlines the note-taking process during work calls. It captures audio, transcribes it using OpenAI's Whisper model, and uses GPT-3 to generate concise notes, which are then uploaded to a specified Notion page.
+**Parrot** is a Chrome extension that streamlines the note-taking process during work calls. It captures audio, transcribes it using OpenAI's Whisper model, and uses GPT to generate concise notes, which are then uploaded to a specified Notion page.
 
 Warning: there isn't yet a packaged distribution.
 
@@ -10,7 +10,7 @@ Warning: there isn't yet a packaged distribution.
 ## Installation
 
 ### Steps:
-1. **Download**: Get Parrot (version 0.1) from the Chrome Web Store or the provided source.
+1. **Download**: Get Parrot (version 0.1) from this repo, no real distribution (for now).
 2. **Unzip**: Extract the downloaded file.
 3. **Load in Chrome**:
     - Navigate to `chrome://extensions/`.

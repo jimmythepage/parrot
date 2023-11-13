@@ -33,7 +33,8 @@ let data = [];
 let notionSecret="";
 let existingPageId="";
 let OPENAI_KEY="";
-let GPT_PROMPT="Please read this transcript from a work call and generate a brief recap and extract action points. Do not write anything else, no introductions, no greetings, just the recap and the action points."
+let GPT_PROMPT_SPLITTING=""
+let GPT_PROMPT_RECAP=""
 let language="en";
  
 
@@ -47,7 +48,8 @@ function loadConfig()
           notionSecret=data.notionSecret;
           existingPageId=data.existingPageId;
           OPENAI_KEY=data.openAIKey;
-          GPT_PROMPT=data.gptPrompt;
+          GPT_PROMPT_SPLITTING=data.gptPrompt_splitting;
+          GPT_PROMPT_RECAP=data.gptPrompt_recap;
           language=data.language;
       })
       .catch(error => console.error('Error loading configuration:', error));
@@ -127,7 +129,7 @@ async function startRecording(streamId) {
     .then(data => {
         // Step 4: Handle Response
         console.log("Transcription: ", data.text); // Display or process the transcription
-        askGPTRecap(transcript_title,data.text);
+        askGPTSplitting(transcript_title,data.text);
     })
     .catch(error => {
         console.error("Error: ", error);
@@ -165,6 +167,38 @@ async function stopRecording() {
   // keep the sample fairly simple to follow.
 }
 
+async function askGPTSplitting(transcript_title,transcript)
+{
+  fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer '+ OPENAI_KEY
+    },
+    body: JSON.stringify({
+      "model": "gpt-4",
+      "messages": [
+        {
+          "role": "system",
+          "content": GPT_PROMPT_SPLITTING
+        },
+        {
+          "role": "user",
+          "content": transcript
+        }
+      ]
+    })
+  })
+  .then(response => response.json())
+  .then(data => 
+    {
+      console.log(data);
+      let transcript_splitted = data.choices[0].message.content;
+      askGPTRecap(transcript_title,transcript_splitted);
+    })
+  .catch(error => console.error('Error:', error));
+}
+
 async function askGPTRecap(transcript_title,transcript)
 {
   fetch('https://api.openai.com/v1/chat/completions', {
@@ -174,11 +208,11 @@ async function askGPTRecap(transcript_title,transcript)
       'Authorization': 'Bearer '+ OPENAI_KEY
     },
     body: JSON.stringify({
-      "model": "gpt-3.5-turbo",
+      "model": "gpt-4",
       "messages": [
         {
           "role": "system",
-          "content": GPT_PROMPT
+          "content": GPT_PROMPT_RECAP
         },
         {
           "role": "user",
@@ -199,6 +233,46 @@ async function askGPTRecap(transcript_title,transcript)
 
 async function pushToNotion(transcript_title,transcript,notes) {
 
+  // Split transcript into chunks of 2000 characters
+  const chunkSize = 2000;
+  const transcriptChunks = [];
+  
+  for (let i = 0; i < transcript.length; i += chunkSize) {
+    transcriptChunks.push(transcript.substring(i, i + chunkSize));
+  }
+
+  // Prepare children blocks with split transcript
+  const childrenBlocks = [
+    {
+      "object": "block",
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [{ "type": "text", "text": { "content": "Transcript" } }]
+      }
+    },
+    ...transcriptChunks.map(chunk => ({
+      "object": "block",
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{ "type": "text", "text": { "content": chunk } }]
+      }
+    })),
+    {
+      "object": "block",
+      "type": "heading_1",
+      "heading_1": {
+        "rich_text": [{ "type": "text", "text": { "content": "Notes" } }]
+      }
+    },
+    {
+      "object": "block",
+      "type": "paragraph",
+      "paragraph": {
+        "rich_text": [{ "type": "text", "text": { "content": notes } }]
+      }
+    }
+  ];
+  
   // Example of creating a new page in Notion
   fetch('https://api.notion.com/v1/pages', {
     method: 'POST',
@@ -214,36 +288,7 @@ async function pushToNotion(transcript_title,transcript,notes) {
           "title": [{ "type": "text", "text": { "content": transcript_title } }]
         }
       },
-      "children": [
-        {
-          "object": "block",
-          "type": "heading_1",
-          "heading_1": {
-            "rich_text": [{ "type": "text", "text": { "content": "Transcript" } }]
-          }
-        },
-        {
-          "object": "block",
-          "type": "paragraph",
-          "paragraph": {
-            "rich_text": [{ "type": "text", "text": { "content": transcript } }]
-          }
-        },
-        {
-          "object": "block",
-          "type": "heading_1",
-          "heading_1": {
-            "rich_text": [{ "type": "text", "text": { "content": "Notes" } }]
-          }
-        },
-        {
-          "object": "block",
-          "type": "paragraph",
-          "paragraph": {
-            "rich_text": [{ "type": "text", "text": { "content": notes } }]
-          }
-        }
-      ]
+      "children": childrenBlocks
     })
   })
   .then(response => response.json())

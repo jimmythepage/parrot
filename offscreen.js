@@ -176,7 +176,7 @@ async function askGPTSplitting(transcript_title,transcript)
       'Authorization': 'Bearer '+ OPENAI_KEY
     },
     body: JSON.stringify({
-      "model": "gpt-4",
+      "model": "gpt-3.5-turbo",
       "messages": [
         {
           "role": "system",
@@ -208,7 +208,7 @@ async function askGPTRecap(transcript_title,transcript)
       'Authorization': 'Bearer '+ OPENAI_KEY
     },
     body: JSON.stringify({
-      "model": "gpt-4",
+      "model": "gpt-3.5-turbo",
       "messages": [
         {
           "role": "system",

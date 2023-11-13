@@ -55,4 +55,4 @@ Create a `config.json` file in the extension's root directory.
 
 ## Feedback and Support
 
-Feel free to clone, fork and request PR. This is just a little tool for productivity under MIT license.
+Feel free to clone, fork and request PR. This is just a little tool for productivity under MIT license, made to improve my everday life at work. It is laser focused on one thing alone and taht is whay I needed: not a big complicated enviroment but a single button approach.

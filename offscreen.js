@@ -33,7 +33,6 @@ let data = [];
 let notionSecret="";
 let existingPageId="";
 let OPENAI_KEY="";
-let GPT_PROMPT_SPLITTING=""
 let GPT_PROMPT_RECAP=""
 let language="en";
  
@@ -48,7 +47,6 @@ function loadConfig()
           notionSecret=data.notionSecret;
           existingPageId=data.existingPageId;
           OPENAI_KEY=data.openAIKey;
-          GPT_PROMPT_SPLITTING=data.gptPrompt_splitting;
           GPT_PROMPT_RECAP=data.gptPrompt_recap;
           language=data.language;
       })
@@ -129,7 +127,7 @@ async function startRecording(streamId) {
     .then(data => {
         // Step 4: Handle Response
         console.log("Transcription: ", data.text); // Display or process the transcription
-        askGPTSplitting(transcript_title,data.text);
+        askGPTRecap(transcript_title,data.text);
     })
     .catch(error => {
         console.error("Error: ", error);
@@ -165,38 +163,6 @@ async function stopRecording() {
   // to avoid keeping a document around unnecessarily. Here we avoid that to
   // make sure the browser keeps the Object URL we create (see above) and to
   // keep the sample fairly simple to follow.
-}
-
-async function askGPTSplitting(transcript_title,transcript)
-{
-  fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer '+ OPENAI_KEY
-    },
-    body: JSON.stringify({
-      "model": "gpt-3.5-turbo-1106",
-      "messages": [
-        {
-          "role": "system",
-          "content": GPT_PROMPT_SPLITTING
-        },
-        {
-          "role": "user",
-          "content": transcript
-        }
-      ]
-    })
-  })
-  .then(response => response.json())
-  .then(data => 
-    {
-      console.log(data);
-      let transcript_splitted = data.choices[0].message.content;
-      askGPTRecap(transcript_title,transcript_splitted);
-    })
-  .catch(error => console.error('Error:', error));
 }
 
 async function askGPTRecap(transcript_title,transcript)

@@ -1,6 +1,6 @@
 {
   "name": "Parrot",
-  "description": "Records the current tab in an offscreen document.",
+  "description": "Parrot is a Chrome extension that streamlines the note-taking process during work calls. It captures audio, transcribes it using OpenAI's Whisper model, and uses GPT to generate concise notes, which are then uploaded to a specified Notion page.",
   "version": "0.1",
   "manifest_version": 3,
   "minimum_chrome_version": "116",

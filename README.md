@@ -16,6 +16,7 @@ Warning: there isn't yet a packaged distribution.
     - Navigate to `chrome://extensions/`.
     - Enable "Developer mode" in the top-right corner.
     - Click "Load unpacked" and select the unzipped extension folder.
+    - Remember to go to the site settings and grant microphone authorization for the extension. This for now has to be done manually.
 
 ---
 

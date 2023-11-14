@@ -2,6 +2,6 @@
     "notionSecret": "your_notion_secret",
     "existingPageId": "your_page_id",
     "openAIKey": "your_openai_key",
-    "gptPrompt_recap":"Please read this transcript and: - generate a brief recap - extract action points. Do not write anything else.",
+    "gptPrompt_recap":"Please read this transcript and: - generate a brief recap - recap it in bullet points - extract action points. Do not write anything else.",
     "language":"en"
 }
